@@ -1,0 +1,225 @@
+# Suppress Powerlevel10k instant prompt warning for console output
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# Basic ZSH Configuration
+HISTSIZE=10000
+SAVEHIST=10000
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt SHARE_HISTORY
+setopt APPEND_HISTORY
+setopt INTERACTIVE_COMMENTS
+
+# Auto-completion
+autoload -Uz compinit
+compinit -d ~/.cache/zcompdump
+
+# Load plugins
+source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh
+source ~/.zsh/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Powerlevel10k theme
+source ~/powerlevel10k/powerlevel10k.zsh-theme
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Display Pokemon-colorscripts with fastfetch (commented out to fix Powerlevel10k instant prompt)
+# Project page: https://gitlab.com/phoneybadger/pokemon-colorscripts#on-other-distros-and-macos
+# pokemon-colorscripts --no-title -s -r | fastfetch -c $HOME/.config/fastfetch/config-pokemon.jsonc --logo-type file-raw --logo-height 10 --logo-width 5 --logo -
+
+# Set-up icons for files/directories in terminal using lsd
+alias ls='lsd'
+alias l='ls -l'
+alias la='ls -a'
+alias lla='ls -la'
+alias lt='ls --tree'
+
+# Additional aliases
+alias ll='ls -alF'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+
+# Git aliases
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gp='git push'
+alias gl='git pull'
+alias gd='git diff'
+
+# System aliases
+alias update='sudo apt update && sudo apt upgrade'
+alias install='sudo apt install'
+alias remove='sudo apt remove'
+alias search='apt search'
+
+# Graphics drivers (for Intel/AMD systems)
+export LIBVA_DRIVER_NAME=iHD
+export __GLX_VENDOR_LIBRARY_NAME=intel
+
+# Path exports
+export PATH=$HOME/.npm-global/bin:$HOME/.local/bin:$PATH
+export EDITOR=nvim
+
+# Cargo/Rust environment
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
+
+# Export fcitx
+export GTK_IM_MODULE=fcitx
+export QT_IM_MODULE=fcitx
+export XMODIFIERS="@im=fcitx"
+
+# Local customizations
+if [ -f ~/.zshrc.local ]; then
+    source ~/.zshrc.local
+fi
+
+source /opt/ros/jazzy/setup.zsh
+eval "$(zoxide init zsh)"
+export LIBCLANG_PATH=/usr/lib/x86_64-linux-gnu
+
+export RIPGREP_CONFIG_PATH="$HOME/.config/ripgrep"
+export PATH="$PATH:/opt/nvim-linux-x86_64/bin"
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/mcig/miniforge3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/mcig/miniforge3/etc/profile.d/conda.sh" ]; then
+        . "/home/mcig/miniforge3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/mcig/miniforge3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+
+
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'mamba shell init' !!
+export MAMBA_EXE='/home/mcig/miniforge3/bin/mamba';
+export MAMBA_ROOT_PREFIX='/home/mcig/miniforge3';
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell zsh --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__mamba_setup"
+else
+    alias mamba="$MAMBA_EXE"  # Fallback on help from mamba activate
+fi
+unset __mamba_setup
+# <<< mamba initialize <<<
+
+[[ "$TERM_PROGRAM" == "kiro" ]] && . "$(kiro --locate-shell-integration-path zsh)"
+
+# 通用解压函数
+extract() {
+    if [ -z "$1" ]; then
+        echo "使用方法: extract <压缩文件>"
+        echo "支持的格式: .zip .tar .tar.gz .tgz .tar.bz2 .tbz2 .tar.xz .txz .7z .rar .gz .bz2 .xz"
+        return 1
+    fi
+
+    if [ ! -f "$1" ]; then
+        echo "错误: 文件 '$1' 不存在"
+        return 1
+    fi
+
+    local filename="$1"
+    local basename=$(basename "$filename")
+    local extension="${basename##*.}"
+    local name_without_ext="${basename%.*}"
+
+    echo "正在解压: $filename"
+
+    case "$filename" in
+        *.zip)
+            if command -v unzip >/dev/null 2>&1; then
+                unzip "$filename"
+            else
+                echo "错误: 需要安装 unzip"
+                return 1
+            fi
+            ;;
+        *.tar|*.tar.gz|*.tgz|*.tar.bz2|*.tbz2|*.tar.xz|*.txz)
+            if command -v tar >/dev/null 2>&1; then
+                tar -xf "$filename"
+            else
+                echo "错误: 需要安装 tar"
+                return 1
+            fi
+            ;;
+        *.7z)
+            if command -v 7z >/dev/null 2>&1; then
+                7z x "$filename"
+            elif command -v p7zip >/dev/null 2>&1; then
+                p7zip -d "$filename"
+            else
+                echo "错误: 需要安装 p7zip 或 7zip"
+                return 1
+            fi
+            ;;
+        *.rar)
+            if command -v unrar >/dev/null 2>&1; then
+                unrar x "$filename"
+            elif command -v rar >/dev/null 2>&1; then
+                rar x "$filename"
+            else
+                echo "错误: 需要安装 unrar 或 rar"
+                return 1
+            fi
+            ;;
+        *.gz)
+            if command -v gunzip >/dev/null 2>&1; then
+                gunzip "$filename"
+            else
+                echo "错误: 需要安装 gunzip"
+                return 1
+            fi
+            ;;
+        *.bz2)
+            if command -v bunzip2 >/dev/null 2>&1; then
+                bunzip2 "$filename"
+            else
+                echo "错误: 需要安装 bunzip2"
+                return 1
+            fi
+            ;;
+        *.xz)
+            if command -v unxz >/dev/null 2>&1; then
+                unxz "$filename"
+            else
+                echo "错误: 需要安装 unxz"
+                return 1
+            fi
+            ;;
+        *)
+            echo "错误: 不支持的文件格式 '$extension'"
+            echo "支持的格式: .zip .tar .tar.gz .tgz .tar.bz2 .tbz2 .tar.xz .txz .7z .rar .gz .bz2 .xz"
+            return 1
+            ;;
+    esac
+
+    if [ $? -eq 0 ]; then
+        echo "✓ 解压完成: $basename"
+    else
+        echo "✗ 解压失败: $basename"
+        return 1
+    fi
+}
+
+# 创建别名
+alias ex='extract'
