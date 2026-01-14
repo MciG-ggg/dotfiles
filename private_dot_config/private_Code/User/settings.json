@@ -1,0 +1,42 @@
+{
+    "workbench.colorTheme": "Dracula Theme",
+    "editor.fontFamily": "'JetBrainsMono Nerd Font', 'JetBrains Mono', monospace",
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font', monospace",
+    "terminal.integrated.fontSize": 14,
+    "workbench.iconTheme": "material-icon-theme",
+    "git.autofetch": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "explorer.confirmDelete": false,
+    "markdown.marp.pdf.outlines": "both",
+    "terminal.integrated.inheritEnv": false,
+    "githubPullRequests.pullBranch": "never",
+    "markdown.marp.pptx.editable": "on",
+    "rust-analyzer.numThreads": null,
+    "terminal.integrated.commandsToSkipShell": [
+        "matlab.interrupt"
+    ],
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": false,
+        "scminput": false,
+        "python": true
+    },
+    "claudeCode.preferredLocation": "panel",
+    "makefile.configureOnOpen": false,
+    "workbench.secondarySideBar.defaultVisibility": "hidden",
+    "markdown.marp.html": "all",
+    "gitlens.ai.model": "vscode",
+    "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+    "workbench.editorAssociations": {
+        "*.copilotmd": "vscode.markdown.preview.editor",
+        "*.pptx": "default"
+    },
+    "editor.minimap.enabled": false
+,
+"material-code.primaryColor": "#b4b7d1",
+"editor.fontLigatures": true,
+"svelte.enable-ts-plugin": true,
+"coderabbit.agentType": "Claude Code",
+"claudeCode.selectedModel": "opus"
+}
