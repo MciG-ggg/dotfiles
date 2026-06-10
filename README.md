@@ -30,6 +30,12 @@
 - **Kitty** - 高性能 GPU 加速终端模拟器
   - 支持主题切换
   - 自定义快捷键和配置
+- **tmux** - 终端复用器配置
+- **Zellij** - 现代终端工作区配置
+
+### 文件管理器
+- **Yazi** - 终端文件管理器配置
+  - 在 Zellij 当前 session 的新 tab 中用 Vim 打开文本文件
 
 ### 编辑器
 - **Neovim** - 现代化的 Vim 编辑器
@@ -107,6 +113,28 @@ git pull
 chezmoi apply
 ```
 
+### 本次新增的终端工作流配置
+
+本仓库现在也管理：
+
+```bash
+~/.tmux.conf
+~/.config/zellij/config.kdl
+~/.config/zellij/layouts/clean.kdl
+~/.config/yazi/yazi.toml
+~/.local/bin/yazi-zellij-vim
+```
+
+如果以后在本机继续修改这些文件，可以用：
+
+```bash
+chezmoi add ~/.tmux.conf
+chezmoi add ~/.config/zellij/config.kdl
+chezmoi add ~/.config/zellij/layouts/clean.kdl
+chezmoi add ~/.config/yazi/yazi.toml
+chezmoi add ~/.local/bin/yazi-zellij-vim
+```
+
 ### 添加新配置
 
 ```bash
@@ -142,6 +170,7 @@ git push
 .
 ├── dot_gitconfig              # Git 配置
 ├── dot_p10k.zsh               # Powerlevel10k 主题配置
+├── dot_tmux.conf              # tmux 配置
 ├── dot_vimrc                  # Vim 配置
 ├── dot_zshrc                  # Zsh 配置
 ├── private_dot_config/        # 配置目录
@@ -156,6 +185,11 @@ git push
 │   │   ├── init.lua
 │   │   ├── lua/
 │   │   └── lazy-lock.json
+│   ├── yazi/                  # Yazi 配置
+│   │   └── yazi.toml
+│   ├── zellij/                # Zellij 配置
+│   │   ├── config.kdl
+│   │   └── layouts/clean.kdl
 │   ├── private_Code/          # VSCode 配置
 │   │   └── User/
 │   │       ├── settings.json
@@ -163,6 +197,8 @@ git push
 │   │       ├── snippets/
 │   │       └── sync/
 │   └── starship.toml          # Starship 提示符配置
+├── private_dot_local/bin/     # 用户脚本
+│   └── executable_yazi-zellij-vim
 └── README.md                  # 本文件
 ```
 

@@ -1,0 +1,119 @@
+// ~/.config/zellij/config.kdl
+// 目标：简单、简洁、好看、少打扰。
+// 使用方式：保留 Zellij 默认快捷键，只追加少量高频快捷键。
+// 常用默认键：
+//   Alt+h/j/k/l   切换 pane
+//   Alt+n         新建 pane
+//   Ctrl+p        pane 模式（分屏/关闭/全屏等）
+//   Ctrl+t        tab 模式（新建/切换/重命名 tab）
+//   Ctrl+s        滚动/搜索历史
+//   Ctrl+o        session 管理
+//   Ctrl+g        锁定/解锁 Zellij 快捷键
+
+// 一个柔和的深色主题：对比清晰但不刺眼
+// 配色参考 Catppuccin Mocha 风格，适合长时间终端使用。
+themes {
+    mcig-clean {
+        fg 205 214 244
+        bg 24 24 37
+        black 30 30 46
+        red 243 139 168
+        green 166 227 161
+        yellow 249 226 175
+        blue 137 180 250
+        magenta 203 166 247
+        cyan 137 220 235
+        white 245 245 245
+        orange 250 179 135
+    }
+}
+
+theme "mcig-clean"
+default_layout "clean"
+default_mode "normal"
+
+// 界面更安静：紧凑底栏、简单 UI、保留边框用于识别当前 pane。
+simplified_ui true
+pane_frames true
+auto_layout true
+show_release_notes false
+
+// 交互：鼠标可用，选中文本自动复制；如终端支持 OSC52，会自动写入剪贴板。
+mouse_mode true
+copy_on_select true
+scroll_buffer_size 20000
+
+// 保持会话可恢复，同时不启动本地 web 共享服务。
+session_serialization true
+serialize_pane_viewport false
+web_server false
+web_sharing "off"
+
+// 内置插件别名。clean 布局依赖 compact-bar。
+plugins {
+    tab-bar location="zellij:tab-bar"
+    status-bar location="zellij:status-bar"
+    compact-bar location="zellij:compact-bar"
+    session-manager location="zellij:session-manager"
+    configuration location="zellij:configuration"
+    plugin-manager location="zellij:plugin-manager"
+    about location="zellij:about"
+    strider location="zellij:strider"
+    filepicker location="zellij:strider" {
+        cwd "/"
+    }
+}
+
+load_plugins {
+    "zellij:link"
+}
+
+// 少量增强：不覆盖默认快捷键，只补几个直觉型操作。
+keybinds {
+    // macOS/Warp friendly: avoid Option/Alt. Use Ctrl+b as a prefix, tmux-style.
+    // After Ctrl+b:
+    //   h/j/k/l  focus panes
+    //   H/J/K/L  move the pane itself
+    //   t        new tab
+    //   ,        rename tab
+    //   .        next tab
+    //   Space    rotate/swap layout
+    //   v/s      split right / split down
+    //   Enter    fullscreen current pane
+    tmux {
+        bind "h" "Left" { MoveFocus "Left"; SwitchToMode "Normal"; }
+        bind "j" "Down" { MoveFocus "Down"; SwitchToMode "Normal"; }
+        bind "k" "Up" { MoveFocus "Up"; SwitchToMode "Normal"; }
+        bind "l" "Right" { MoveFocus "Right"; SwitchToMode "Normal"; }
+
+        bind "H" { MovePane "Left"; SwitchToMode "Normal"; }
+        bind "J" { MovePane "Down"; SwitchToMode "Normal"; }
+        bind "K" { MovePane "Up"; SwitchToMode "Normal"; }
+        bind "L" { MovePane "Right"; SwitchToMode "Normal"; }
+
+        bind "Enter" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
+        bind "Space" { NextSwapLayout; SwitchToMode "Normal"; }
+        bind "v" { NewPane "Right"; SwitchToMode "Normal"; }
+        bind "s" { NewPane "Down"; SwitchToMode "Normal"; }
+        bind "t" { NewTab; SwitchToMode "Normal"; }
+        bind "," { SwitchToMode "RenameTab"; TabNameInput 0; }
+        bind "." { GoToNextTab; SwitchToMode "Normal"; }
+        // Worktree picker: Ctrl+b then w opens a floating selector, then opens the selected worktree in a new pane.
+        bind "w" {
+            Run "bash" "-lc" "$HOME/.local/bin/zellij-worktree-picker" {
+                floating true
+                x "10%"
+                y "10%"
+                width "80%"
+                height "70%"
+                name "worktrees"
+                close_on_exit true
+            }
+            SwitchToMode "Normal";
+        }
+    }
+}
+
+web_client {
+    font "monospace"
+}

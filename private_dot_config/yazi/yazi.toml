@@ -1,0 +1,8 @@
+# ~/.config/yazi/yazi.toml
+# Make Yazi's default text editor open Vim in a separate Zellij tab when Yazi
+# itself is running inside Zellij. Outside Zellij, it falls back to foreground Vim.
+
+[opener]
+edit = [
+  { run = "$HOME/.local/bin/yazi-zellij-vim %s", block = true, for = "unix", desc = "Vim in Zellij tab" },
+]
