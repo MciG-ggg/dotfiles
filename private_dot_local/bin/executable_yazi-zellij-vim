@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+# Open files from Yazi in Vim.  When running inside Zellij, create a new
+# Zellij tab using a temporary layout so Vim receives argv safely.
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+  exit 0
+fi
+
+normalize_path() {
+  if command -v realpath >/dev/null 2>&1; then
+    realpath -m -- "$1"
+  else
+    python3 -c 'import os,sys; print(os.path.abspath(sys.argv[1]))' "$1"
+  fi
+}
+
+files=()
+for path in "$@"; do
+  files+=("$(normalize_path "$path")")
+done
+
+first_file="${files[0]}"
+cwd="$(dirname -- "$first_file")"
+tab_base="$(basename -- "$first_file")"
+tab_name="vim: ${tab_base}"
+
+if [[ -n "${ZELLIJ_SESSION_NAME:-}" || -n "${ZELLIJ:-}" ]]; then
+  if ! command -v zellij >/dev/null 2>&1; then
+    exec vim -- "${files[@]}"
+  fi
+
+  layout="$(mktemp "${TMPDIR:-/tmp}/yazi-vim-tab.XXXXXX.kdl")"
+  trap 'rm -f "$layout"' EXIT
+
+  python3 - "$layout" "$tab_name" "$cwd" "${files[@]}" <<'PY'
+import sys
+from pathlib import Path
+
+layout_path = Path(sys.argv[1])
+tab_name = sys.argv[2]
+cwd = sys.argv[3]
+files = sys.argv[4:]
+
+def q(value: str) -> str:
+    # KDL/basic quoted string escaping sufficient for Unix path argv.
+    return '"' + value.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t') + '"'
+
+args = [q('--'), *(q(path) for path in files)]
+layout_path.write_text(
+    "layout {\n"
+    f"    tab name={q(tab_name)} focus=true {{\n"
+    f"        pane command=\"vim\" cwd={q(cwd)} {{\n"
+    f"            args {' '.join(args)}\n"
+    "            close_on_exit true\n"
+    "        }\n"
+    "    }\n"
+    "}\n",
+    encoding="utf-8",
+)
+PY
+
+  if [[ "${YAZI_ZELLIJ_VIM_DRY_RUN:-}" == "1" ]]; then
+    cat -- "$layout"
+    exit 0
+  fi
+
+  zellij_target=(zellij)
+  if [[ -n "${ZELLIJ_SESSION_NAME:-}" ]]; then
+    zellij_target+=(--session "$ZELLIJ_SESSION_NAME")
+  fi
+
+  # Explicitly target the current Zellij session. With `--session <name>`,
+  # `zellij --layout <file>` adds the layout as a new tab in that session
+  # instead of starting a separate Zellij session.
+  "${zellij_target[@]}" --layout "$layout" || "${zellij_target[@]}" run --cwd "$cwd" --name "$tab_name" -- vim -- "${files[@]}"
+  exit 0
+fi
+
+exec vim -- "${files[@]}"

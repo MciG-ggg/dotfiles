@@ -1,0 +1,8 @@
+// ~/.config/zellij/layouts/clean.kdl
+// 极简布局：主工作区 + 底部一行紧凑状态栏。
+layout {
+    pane
+    pane size=1 borderless=true {
+        plugin location="compact-bar"
+    }
+}
