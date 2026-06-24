@@ -1,86 +1,52 @@
-# 设置 PATH 环境变量
-fish_add_path /usr/local/bin
-fish_add_path /usr/bin
-fish_add_path $HOME/.cargo/bin
-fish_add_path $HOME/.local/bin
-fish_add_path /opt/nvim-linux-x86_64/bin
-fish_add_path $HOME/go/bin
-
-# bun
-set --export BUN_INSTALL "$HOME/.bun"
-set --export PATH $BUN_INSTALL/bin $PATH
-
-function fish_prompt -d "Write out the prompt"
-    # This shows up as USER@HOST /home/user/ >, with the directory colored
-    # $USER and $hostname are set by fish, so you can just use them
-    # instead of using `whoami` and `hostname`
-    printf '%s@%s %s%s%s > ' $USER $hostname \
-        (set_color $fish_color_cwd) (prompt_pwd) (set_color normal)
-end
-
-if status is-interactive # Commands to run in interactive sessions can go here
-
-    # Run fastfetch on shell startup
-    # fastfetch
-
-    # No greeting
-    set fish_greeting
-
-    # Use starship
-    starship init fish | source
-    if test -f ~/.local/state/quickshell/user/generated/terminal/sequences.txt
-        cat ~/.local/state/quickshell/user/generated/terminal/sequences.txt
-    end
-    atuin init fish | source
-
-    # start zoxide
-    zoxide init fish | source
-
-    # Aliases
-    alias pamcan pacman
-    alias ls 'eza --icons'
-    alias clear "printf '\033[2J\033[3J\033[1;1H'"
-    alias q 'qs -c ii'
-    alias bat batcat
-    alias vibe-kanban 'npx vibe-kanban'
-
-end
 
 
-# 验证代理状态的快捷命令 (可选)
-function proxy_check
-    curl -I https://www.google.com
-end
+# >>> mavis-managed: minimax-code-cli >>>
+# Fish doesn't read ~/.bashrc / ~/.zshrc, so fish users don't pick up
+# the PATH that MiniMax Code adds there. Mirror it explicitly.
+fish_add_path -g /Users/mcig/.mavis/bin
+# <<< mavis-managed: minimax-code-cli <<<
 
-# 自动获取 Windows 宿主机 IP
-set -gx WINDOWS_HOST (string trim (cat /etc/resolv.conf | grep nameserver | awk '{print $2}'))
+# >>> codex-managed: homebrew-starship >>>
+# Ensure Homebrew commands are available when fish is the login shell.
+fish_add_path -g /opt/homebrew/bin /opt/homebrew/sbin
 
-# 设置代理函数
-function proxy_on
-    set -gx http_proxy "http://$WINDOWS_HOST:7897"
-    set -gx https_proxy "http://$WINDOWS_HOST:7897"
-    set -gx all_proxy "socks5://$WINDOWS_HOST:7897"
-    # echo "代理已开启: $http_proxy"
-end
-proxy_on
-
-function proxy_off
-    set -e http_proxy
-    set -e https_proxy
-    set -e all_proxy
-    echo 代理已关闭
-end
-
-# nvm setup
+# Enable Starship prompt for interactive fish sessions.
 if status is-interactive
-    # 强制切换到已下载的最新的版本
-    nvm use latest --silent
+    starship init fish | source
 end
-atuin init fish | source
-set -gx BROWSER "/mnt/c/Windows/System32/cmd.exe /c start"
-set -gx UV_INDEX_URL "https://pypi.tuna.tsinghua.edu.cn/simple"
+# <<< codex-managed: homebrew-starship <<<
 
-# opencode
-fish_add_path /home/mcig/.opencode/bin
+# Flutter SDK
+fish_add_path -g /Users/mcig/flutter/bin
 
-set -gx PATH "/home/mcig/.pixi/bin" $PATH
+# >>> codex-managed: flutter-android-env >>>
+# Flutter / Android SDK / Java for Flutter development.
+set -gx JAVA_HOME /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+set -gx ANDROID_HOME $HOME/Library/Android/sdk
+set -gx ANDROID_SDK_ROOT $ANDROID_HOME
+set -gx LANG en_US.UTF-8
+set -gx LC_ALL en_US.UTF-8
+fish_add_path -g /Users/mcig/flutter/bin
+fish_add_path -g /opt/homebrew/opt/openjdk@17/bin
+fish_add_path -g $ANDROID_HOME/platform-tools $ANDROID_HOME/emulator $ANDROID_HOME/cmdline-tools/latest/bin
+fish_add_path -g /Library/TeX/texbin
+# <<< codex-managed: flutter-android-env <<<
+
+# >>> codex-managed: local-cli-proxy >>>
+# Use Clash Verge's local mixed HTTP proxy for CLI tools when TUN is off.
+# This keeps Flutter/Gradle/Git network checks working without affecting localhost.
+if command -q nc; and nc -z 127.0.0.1 7897 >/dev/null 2>&1
+    set -gx http_proxy http://127.0.0.1:7897
+    set -gx https_proxy http://127.0.0.1:7897
+    set -gx HTTP_PROXY $http_proxy
+    set -gx HTTPS_PROXY $https_proxy
+    set -gx ALL_PROXY http://127.0.0.1:7897
+    set -gx no_proxy localhost,127.0.0.1,::1
+    set -gx NO_PROXY $no_proxy
+end
+# <<< codex-managed: local-cli-proxy <<<
+export PATH="$HOME/.local/bin:$PATH"
+zoxide init fish | source
+
+# colima docker socket
+set -gx DOCKER_HOST unix:///Users/mcig/.colima/default/docker.sock
