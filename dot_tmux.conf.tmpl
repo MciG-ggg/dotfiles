@@ -6,6 +6,11 @@ set -g default-terminal "tmux-256color"
 # 确保 tmux 传递颜色设置
 set -ga terminal-overrides ",*256col*:Tc"
 
+# 编号从 1 开始,匹配常见 tab/window 习惯。
+set -g base-index 1
+setw -g pane-base-index 1
+set -g renumber-windows on
+
 # ==================== Prefix 与快捷键 ====================
 # 明确写入本机实际使用的 prefix/常用绑定,避免只依赖插件自动注入。
 unbind-key -q C-b
