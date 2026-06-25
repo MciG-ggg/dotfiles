@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# tmux-local-ip: print the primary LAN IPv4 address for status-bar use.
+# macOS: en0 (Wi-Fi) -> en1/en2/en3 fallback
+# Linux: hostname -I -> ip -4 addr fallback
+#
+# Wired into ~/.tmux.conf via:
+#   set -agF status-right "#[fg=...,bg=...] #(tmux-local-ip) "
+
+set -u
+
+get_local_ip() {
+  case "$(uname -s)" in
+    Darwin)
+      for iface in en0 en1 en2 en3; do
+        local ip
+        ip=$(ipconfig getifaddr "$iface" 2>/dev/null)
+        if [ -n "$ip" ]; then
+          printf 'LAN %s\n' "$ip"
+          return 0
+        fi
+      done
+      return 1
+      ;;
+    Linux)
+      local ip
+      ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+      if [ -z "$ip" ]; then
+        ip=$(ip -4 -o addr show scope global 2>/dev/null \
+              | awk '{print $4}' | cut -d/ -f1 | head -1)
+      fi
+      if [ -n "$ip" ]; then
+        printf 'LAN %s\n' "$ip"
+        return 0
+      fi
+      return 1
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+get_local_ip || exit 0  # silently emit nothing if no IP found
