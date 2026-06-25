@@ -1,0 +1,97 @@
+# Shared fish configuration rendered by chezmoi.
+# Keep cross-platform defaults outside OS blocks; gate machine-specific paths below.
+
+# Common user-local tools.
+fish_add_path -g $HOME/.local/bin
+
+if test -d $HOME/.cargo/bin
+    fish_add_path -g $HOME/.cargo/bin
+end
+
+if status is-interactive; and command -q starship
+    starship init fish | source
+end
+
+if command -q zoxide
+    zoxide init fish | source
+end
+
+set -gx LANG en_US.UTF-8
+set -gx LC_ALL en_US.UTF-8
+
+{{ if eq .chezmoi.os "darwin" }}
+# macOS-only paths and developer tooling.
+
+# >>> mavis-managed: minimax-code-cli >>>
+# Fish doesn't read ~/.bashrc / ~/.zshrc, so fish users don't pick up
+# the PATH that MiniMax Code adds there. Mirror it explicitly when present.
+if test -d $HOME/.mavis/bin
+    fish_add_path -g $HOME/.mavis/bin
+end
+# <<< mavis-managed: minimax-code-cli <<<
+
+# >>> codex-managed: homebrew-starship >>>
+# Ensure Homebrew commands are available when fish is the login shell.
+for p in /opt/homebrew/bin /opt/homebrew/sbin /usr/local/bin /usr/local/sbin
+    if test -d $p
+        fish_add_path -g $p
+    end
+end
+# <<< codex-managed: homebrew-starship <<<
+
+# Flutter SDK / Android SDK / Java for Flutter development.
+if test -d $HOME/flutter/bin
+    fish_add_path -g $HOME/flutter/bin
+end
+
+if test -d /opt/homebrew/opt/openjdk@17
+    set -gx JAVA_HOME /opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home
+    fish_add_path -g /opt/homebrew/opt/openjdk@17/bin
+end
+
+if test -d $HOME/Library/Android/sdk
+    set -gx ANDROID_HOME $HOME/Library/Android/sdk
+    set -gx ANDROID_SDK_ROOT $ANDROID_HOME
+    fish_add_path -g $ANDROID_HOME/platform-tools $ANDROID_HOME/emulator $ANDROID_HOME/cmdline-tools/latest/bin
+end
+
+if test -d /Library/TeX/texbin
+    fish_add_path -g /Library/TeX/texbin
+end
+
+# >>> codex-managed: local-cli-proxy >>>
+# Use Clash Verge's local mixed HTTP proxy for CLI tools when TUN is off.
+# This keeps Flutter/Gradle/Git network checks working without affecting localhost.
+if command -q nc; and nc -z 127.0.0.1 7897 >/dev/null 2>&1
+    set -gx http_proxy http://127.0.0.1:7897
+    set -gx https_proxy http://127.0.0.1:7897
+    set -gx HTTP_PROXY $http_proxy
+    set -gx HTTPS_PROXY $https_proxy
+    set -gx ALL_PROXY http://127.0.0.1:7897
+    set -gx no_proxy localhost,127.0.0.1,::1
+    set -gx NO_PROXY $no_proxy
+end
+# <<< codex-managed: local-cli-proxy <<<
+
+# Colima docker socket.
+if test -S $HOME/.colima/default/docker.sock
+    set -gx DOCKER_HOST unix://$HOME/.colima/default/docker.sock
+end
+{{ else if eq .chezmoi.os "linux" }}
+# Linux-only paths. All guarded so servers without a given tool stay clean.
+if test -d /home/linuxbrew/.linuxbrew/bin
+    fish_add_path -g /home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin
+end
+
+if test -d /usr/local/go/bin
+    fish_add_path -g /usr/local/go/bin
+end
+
+if test -d $HOME/go/bin
+    fish_add_path -g $HOME/go/bin
+end
+
+if test -d /usr/lib/jvm/default-java
+    set -gx JAVA_HOME /usr/lib/jvm/default-java
+end
+{{ end }}

@@ -58,11 +58,12 @@ bind-key y run-shell -b ~/.tmux/plugins/tmux-yank/scripts/copy_line.sh
 bind-key Y run-shell -b ~/.tmux/plugins/tmux-yank/scripts/copy_pane_pwd.sh
 
 # agent-cockpit popup 快捷键
-# C 打开主控弹窗;/ 打开搜索弹窗。脚本来自 ~/.tmux/plugins/agent-cockpit -> ~/Projects/agent-cockpit/contrib/tmux。
-bind-key C display-popup -E -w 70% -h 90% "sh -c '~/.tmux/plugins/agent-cockpit/scripts/popup.sh'"
-bind-key / display-popup -E -w 70% -h 90% "sh -c '~/.tmux/plugins/agent-cockpit/scripts/popup.sh --mode=search'"
+# C 打开主控弹窗;/ 打开搜索弹窗。仅在脚本存在时绑定,避免 Linux 服务器未安装 cockpit 时覆盖默认键。
+if-shell 'test -x "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'   'bind-key C display-popup -E -w 70% -h 90% "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'
+if-shell 'test -x "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'   'bind-key / display-popup -E -w 70% -h 90% "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh --mode=search"'
 
-# copy-mode 剪贴板绑定(tmux-yank 默认行为显式化,macOS 使用 pbcopy)
+# copy-mode 剪贴板绑定。按系统选择可用的系统剪贴板工具。
+{{ if eq .chezmoi.os "darwin" }}
 bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "pbcopy"
 bind-key -T copy-mode Y send-keys -X copy-pipe-and-cancel "tmux paste-buffer -p"
 bind-key -T copy-mode ! send-keys -X copy-pipe-and-cancel "tr -d '\n' | pbcopy"
@@ -72,6 +73,13 @@ bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "pbcopy"
 bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "tmux paste-buffer -p"
 bind-key -T copy-mode-vi ! send-keys -X copy-pipe-and-cancel "tr -d '\n' | pbcopy"
 bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "pbcopy"
+{{ else if eq .chezmoi.os "linux" }}
+if-shell 'command -v wl-copy >/dev/null 2>&1'   'bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "wl-copy" \; bind-key -T copy-mode MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "wl-copy" \; bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "wl-copy" \; bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "wl-copy" \; bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "wl-copy"'
+if-shell 'command -v xclip >/dev/null 2>&1'   'bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in" \; bind-key -T copy-mode MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in" \; bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in" \; bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in" \; bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xclip -selection clipboard -in"'
+if-shell 'command -v xsel >/dev/null 2>&1'   'bind-key -T copy-mode y send-keys -X copy-pipe-and-cancel "xsel --clipboard --input" \; bind-key -T copy-mode MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xsel --clipboard --input" \; bind-key -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "xsel --clipboard --input" \; bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "xsel --clipboard --input" \; bind-key -T copy-mode-vi MouseDragEnd1Pane send-keys -X copy-pipe-and-cancel "xsel --clipboard --input"'
+bind-key -T copy-mode Y send-keys -X copy-pipe-and-cancel "tmux paste-buffer -p"
+bind-key -T copy-mode-vi Y send-keys -X copy-pipe-and-cancel "tmux paste-buffer -p"
+{{ end }}
 
 # 注意:不要再手写 setw/-g window-status-style、pane-border-style、
 # message-style、status-style 之类的 Dracula 时代硬编码 —— 它们会覆盖
@@ -103,7 +111,7 @@ set -g @catppuccin_status_uptime_disable       true
 # ==================== TPM 初始化 ====================
 # 必须放在 status-right 之前 —— 状态栏里 #{E:@catppuccin_status_*}
 # 依赖 catppuccin 加载后才会定义的变量,run tpm 会同步等插件加载完才返回。
-run '~/.tmux/plugins/tpm/tpm'
+if-shell 'test -x "$HOME/.tmux/plugins/tpm/tpm"' 'run-shell "$HOME/.tmux/plugins/tpm/tpm"'
 
 # ==================== status bar 模块布局 ====================
 # Catppuccin 模块变量由 TPM 加载主题后生成,所以必须放在 run tpm 之后。
