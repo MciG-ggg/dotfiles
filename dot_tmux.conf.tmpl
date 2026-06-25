@@ -20,6 +20,16 @@ bind-key C-n next-window
 bind-key r source-file ~/.tmux.conf \; display-message "tmux config reloaded"
 bind-key R source-file ~/.tmux.conf \; display-message "Sourced ~/.tmux.conf!"
 
+# 帮助/快捷键总览
+# tmux 默认 prefix+? 是 list-keys -N,只显示带 note 的键;这里改成完整 key table。
+bind-key ? list-keys
+# 保留 tmux 默认的按键查找帮助。
+bind-key / command-prompt -k -p key { list-keys -1N "%%" }
+
+# 普通浮动 shell 窗口
+# F 在屏幕中央打开一个 80% x 80% popup,退出 shell 后自动关闭。
+bind-key F display-popup -E -w 80% -h 80%
+
 # pane 导航与大小调整(tmux-pain-control 常见绑定,这里显式固定)
 bind-key h select-pane -L
 bind-key C-h select-pane -L
@@ -58,9 +68,9 @@ bind-key y run-shell -b ~/.tmux/plugins/tmux-yank/scripts/copy_line.sh
 bind-key Y run-shell -b ~/.tmux/plugins/tmux-yank/scripts/copy_pane_pwd.sh
 
 # agent-cockpit popup 快捷键
-# C 打开主控弹窗;/ 打开搜索弹窗。仅在脚本存在时绑定,避免 Linux 服务器未安装 cockpit 时覆盖默认键。
+# C 打开主控弹窗;S 打开搜索弹窗。仅在脚本存在时绑定,避免 Linux 服务器未安装 cockpit 时覆盖默认键。
 if-shell 'test -x "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'   'bind-key C display-popup -E -w 70% -h 90% "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'
-if-shell 'test -x "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'   'bind-key / display-popup -E -w 70% -h 90% "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh --mode=search"'
+if-shell 'test -x "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh"'   'bind-key S display-popup -E -w 70% -h 90% "$HOME/.tmux/plugins/agent-cockpit/scripts/popup.sh --mode=search"'
 
 # copy-mode 剪贴板绑定。按系统选择可用的系统剪贴板工具。
 {{ if eq .chezmoi.os "darwin" }}
