@@ -8,17 +8,6 @@ if test -d $HOME/.cargo/bin
     fish_add_path -g $HOME/.cargo/bin
 end
 
-if status is-interactive; and command -q starship
-    starship init fish | source
-end
-
-if command -q zoxide
-    zoxide init fish | source
-end
-
-set -gx LANG en_US.UTF-8
-set -gx LC_ALL en_US.UTF-8
-
 {{ if eq .chezmoi.os "darwin" }}
 # macOS-only paths and developer tooling.
 
@@ -31,7 +20,7 @@ end
 # <<< mavis-managed: minimax-code-cli <<<
 
 # >>> codex-managed: homebrew-starship >>>
-# Ensure Homebrew commands are available when fish is the login shell.
+# Ensure Homebrew commands are available before prompt/tool initialization.
 for p in /opt/homebrew/bin /opt/homebrew/sbin /usr/local/bin /usr/local/sbin
     if test -d $p
         fish_add_path -g $p
@@ -58,7 +47,38 @@ end
 if test -d /Library/TeX/texbin
     fish_add_path -g /Library/TeX/texbin
 end
+{{ else if eq .chezmoi.os "linux" }}
+# Linux-only paths. All guarded so servers without a given tool stay clean.
+if test -d /home/linuxbrew/.linuxbrew/bin
+    fish_add_path -g /home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin
+end
 
+if test -d /usr/local/go/bin
+    fish_add_path -g /usr/local/go/bin
+end
+
+if test -d $HOME/go/bin
+    fish_add_path -g $HOME/go/bin
+end
+
+if test -d /usr/lib/jvm/default-java
+    set -gx JAVA_HOME /usr/lib/jvm/default-java
+end
+{{ end }}
+
+# Prompt/navigation tools must run after platform PATH setup.
+if status is-interactive; and command -q starship
+    starship init fish | source
+end
+
+if command -q zoxide
+    zoxide init fish | source
+end
+
+set -gx LANG en_US.UTF-8
+set -gx LC_ALL en_US.UTF-8
+
+{{ if eq .chezmoi.os "darwin" }}
 # >>> codex-managed: local-cli-proxy >>>
 # Use Clash Verge's local mixed HTTP proxy for CLI tools when TUN is off.
 # This keeps Flutter/Gradle/Git network checks working without affecting localhost.
@@ -76,22 +96,5 @@ end
 # Colima docker socket.
 if test -S $HOME/.colima/default/docker.sock
     set -gx DOCKER_HOST unix://$HOME/.colima/default/docker.sock
-end
-{{ else if eq .chezmoi.os "linux" }}
-# Linux-only paths. All guarded so servers without a given tool stay clean.
-if test -d /home/linuxbrew/.linuxbrew/bin
-    fish_add_path -g /home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin
-end
-
-if test -d /usr/local/go/bin
-    fish_add_path -g /usr/local/go/bin
-end
-
-if test -d $HOME/go/bin
-    fish_add_path -g $HOME/go/bin
-end
-
-if test -d /usr/lib/jvm/default-java
-    set -gx JAVA_HOME /usr/lib/jvm/default-java
 end
 {{ end }}
