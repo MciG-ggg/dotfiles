@@ -23,7 +23,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
 Plug 'enricobacis/vim-airline-clock'
 Plug 'arcticicestudio/nord-vim'
-Plug 'gruvbox-community/gruvbox'
+Plug 'catppuccin/vim', { 'as': 'catppuccin' }
 Plug 'mhinz/vim-startify'
 Plug 'tpope/vim-obsession'
 Plug 'iamcco/markdown-preview.nvim', { 'do': 'cd app && yarn install' }
@@ -44,22 +44,21 @@ Plug 'wellle/context.vim'
 call plug#end()
 
 syntax enable
+filetype plugin indent on
+
+" Light-terminal friendly theme. Keep this before loading Catppuccin.
+set termguicolors
+set background=light
+let g:catppuccin_flavour = 'latte'
 
 let g:airline_powerline_fonts = 1
 let g:airline#extensions#wordcount#enabled = 1
 let g:airline#extensions#wordcount#filetypes = '\vhelp|markdown|rst|org|text|asciidoc|tex|mail|typ'
-let g:gruvbox_italic = 1
-silent! colorscheme gruvbox
-" 如果 gruvbox 未安装，使用默认配色
-if exists(":colorscheme") == 0 || empty(getcompletion('gruvbox', 'color'))
+let g:airline_theme = 'catppuccin'
+silent! colorscheme catppuccin_latte
+" 如果 Catppuccin 未安装，使用默认配色
+if exists(":colorscheme") == 0 || empty(getcompletion('catppuccin_latte', 'color'))
     silent! colorscheme default
-endif
-
-" dark colorscheme in SSH
-if empty($SSH_CLIENT) && empty($SSH_TTY) && ! has('gui_running')
-  set background=dark
-else
-  set background=dark
 endif
 
 if ! has("gui_running")
@@ -95,6 +94,37 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
 
 set nu
+set relativenumber
+set cursorline
+set showcmd
+set ruler
+set scrolloff=5
+set sidescrolloff=8
+set hidden
+set wildmenu
+set wildmode=longest:full,full
+set completeopt=menuone,noinsert,noselect
+set shortmess+=c
+set updatetime=300
+set timeoutlen=500
+set signcolumn=yes
+set splitbelow
+set splitright
+set ignorecase
+set smartcase
+set incsearch
+set hlsearch
+set undofile
+set swapfile
+set backupskip=/tmp/*,/private/tmp/*
+set tabstop=4
+set shiftwidth=4
+set softtabstop=4
+set expandtab
+set smartindent
+set autoindent
+set list
+set listchars=tab:»\ ,trail:·,extends:›,precedes:‹,nbsp:␣
 
 let mapleader=","
 let maplocalleader="-"
@@ -102,11 +132,19 @@ let maplocalleader="-"
 if has("autocmd")
   au BufReadPost * if line("'\"") > 1 && line("'\"") <= line("$") | exe "normal! g'\"" | endif
 endif
-" set tabstop=4
-" set shiftwidth=4
-" set expandtab
-
 set mouse=a
+
+if has('clipboard')
+  set clipboard=unnamed
+endif
+
+" Convenience mappings for day-to-day editing.
+nnoremap <silent> <leader>w :write<CR>
+nnoremap <silent> <leader>q :quit<CR>
+nnoremap <silent> <leader><space> :nohlsearch<CR>
+nnoremap <silent> <leader>n :NERDTreeFind<CR>
+nnoremap <silent> <leader>t :NERDTreeToggle<CR>
+nnoremap <silent> <leader>ff :CtrlP<CR>
 
 set statusline+=%#warningmsg#
 set statusline+=%*
@@ -161,9 +199,6 @@ nnoremap <C-c> <nop>
 
 " default output format for GraphViz
 let g:graphviz_output_format = 'png'
-
-" enable true color support
-set termguicolors
 
 " show bracket match pairs
 set showmatch
@@ -275,10 +310,6 @@ endif
 
 " Show date in airline
 let g:airline#extensions#clock#format = '%F'
-
-" set relative numbering and numbering
-set relativenumber
-set number
 
 " line wrap at 80 col
 set textwidth=80
