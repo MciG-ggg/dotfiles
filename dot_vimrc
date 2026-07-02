@@ -145,6 +145,73 @@ nnoremap <silent> <leader><space> :nohlsearch<CR>
 nnoremap <silent> <leader>n :NERDTreeFind<CR>
 nnoremap <silent> <leader>t :NERDTreeToggle<CR>
 nnoremap <silent> <leader>ff :CtrlP<CR>
+nnoremap <silent> <leader>? :Keymaps<CR>
+
+" Show a concise in-Vim shortcut reference.
+function! s:show_keymaps() abort
+  tabnew
+  setlocal buftype=nofile bufhidden=wipe noswapfile nobuflisted
+  setlocal filetype=markdown modifiable
+  silent file Vim-Keymaps
+  call setline(1, [
+        \ '# Vim 快捷键',
+        \ '',
+        \ 'Leader: `,`    LocalLeader: `-`',
+        \ '',
+        \ '## 常用',
+        \ '- `,w` 保存',
+        \ '- `,q` 退出',
+        \ '- `,<Space>` 清除搜索高亮',
+        \ '- `,?` 打开这个快捷键页面',
+        \ '- `F2` 打开 Vim terminal',
+        \ '- `F3` paste toggle',
+        \ '- `F4` 执行 `:open`',
+        \ '',
+        \ '## 文件和项目',
+        \ '- `Ctrl-n` 切换 NERDTree',
+        \ '- `,t` 切换 NERDTree',
+        \ '- `,n` 在 NERDTree 定位当前文件',
+        \ '- `,ff` 打开 CtrlP 文件搜索',
+        \ '',
+        \ '## Buffer',
+        \ '- `,l` 下一个 buffer',
+        \ '- `,h` 上一个 buffer',
+        \ '',
+        \ '## 补全菜单',
+        \ '- 插入模式 `Tab` 选择下一个补全项',
+        \ '- 插入模式 `Shift-Tab` 选择上一个补全项',
+        \ '- 插入模式 `Enter` 关闭补全菜单或正常回车',
+        \ '',
+        \ '## LSP',
+        \ '- `gd` 跳转定义',
+        \ '- `gs` 搜索当前文档符号',
+        \ '- `gS` 搜索 workspace 符号',
+        \ '- `gr` 查找引用',
+        \ '- `gi` 跳转实现',
+        \ '- `gt` 跳转类型定义',
+        \ '- `,rn` 重命名',
+        \ '- `[g` 上一个诊断',
+        \ '- `]g` 下一个诊断',
+        \ '- `K` hover 文档',
+        \ '- `Ctrl-d` 向下滚动 LSP 浮窗',
+        \ '- `Ctrl-u` 向上滚动 LSP 浮窗',
+        \ '',
+        \ '## Racket / Slime',
+        \ '- `:Racket` 打开 Racket REPL 并进入当前文件',
+        \ '- `Ctrl-c` 在普通模式禁用，避免和 vim-slime 冲突',
+        \ '',
+        \ '## Vim 内置查询',
+        \ '- `:map` 查看所有映射',
+        \ '- `:nmap` 查看普通模式映射',
+        \ '- `:imap` 查看插入模式映射',
+        \ '- `:verbose map {key}` 查看某个快捷键来自哪里',
+        \ ])
+  setlocal nomodifiable nomodified
+  normal! gg
+endfunction
+
+command! Keymaps call s:show_keymaps()
+command! VimKeys call s:show_keymaps()
 
 set statusline+=%#warningmsg#
 set statusline+=%*
