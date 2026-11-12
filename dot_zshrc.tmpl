@@ -1,0 +1,335 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+# Disabled 2026-04-16 in favor of starship.
+# if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+#   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# fi
+
+# If you come from bash you might have to change your $PATH.
+export PATH=$HOME/bin:$HOME/.local/bin:$PATH
+
+# Path to your Oh My Zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+# Set name of the theme to load --- if set to "random", it will
+# load a random theme each time Oh My Zsh is loaded, in which case,
+# to know which specific one was loaded, run: echo $RANDOM_THEME
+# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+ZSH_THEME=""
+
+# Set list of themes to pick from when loading at random
+# Setting this variable when ZSH_THEME=random will cause zsh to load
+# a theme from this variable instead of looking in $ZSH/themes/
+# If set to an empty array, this variable will have no effect.
+# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+
+# Uncomment the following line to use case-sensitive completion.
+# CASE_SENSITIVE="true"
+
+# Uncomment the following line to use hyphen-insensitive completion.
+# Case-sensitive completion must be off. _ and - will be interchangeable.
+# HYPHEN_INSENSITIVE="true"
+
+# Uncomment one of the following lines to change the auto-update behavior
+# zstyle ':omz:update' mode disabled  # disable automatic updates
+# zstyle ':omz:update' mode auto      # update automatically without asking
+# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+
+# Uncomment the following line to change how often to auto-update (in days).
+# zstyle ':omz:update' frequency 13
+
+# Uncomment the following line if pasting URLs and other text is messed up.
+# DISABLE_MAGIC_FUNCTIONS="true"
+
+# Uncomment the following line to disable colors in ls.
+# DISABLE_LS_COLORS="true"
+
+# Uncomment the following line to disable auto-setting terminal title.
+# DISABLE_AUTO_TITLE="true"
+
+# Uncomment the following line to enable command auto-correction.
+# ENABLE_CORRECTION="true"
+
+# Uncomment the following line to display red dots whilst waiting for completion.
+# You can also set it to another string to have that shown instead of the default red dots.
+# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
+# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
+# COMPLETION_WAITING_DOTS="true"
+
+# Uncomment the following line if you want to disable marking untracked files
+# under VCS as dirty. This makes repository status check for large repositories
+# much, much faster.
+# DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# Uncomment the following line if you want to change the command execution time
+# stamp shown in the history command output.
+# You can set one of the optional three formats:
+# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
+# or set a custom format using the strftime function format specifications,
+# see 'man strftime' for details.
+# HIST_STAMPS="mm/dd/yyyy"
+
+# Would you like to use another custom folder than $ZSH/custom?
+# ZSH_CUSTOM=/path/to/new-custom-folder
+
+# Which plugins would you like to load?
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
+# Example format: plugins=(rails git textmate ruby lighthouse)
+# Add wisely, as too many plugins slow down shell startup.
+plugins=(
+  git
+  z
+  sudo
+  extract
+  web-search
+  copypath
+  copyfile
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# --- Starship (replaces p10k as of 2026-04-16) -------------------------------
+# Must run AFTER oh-my-zsh so OMZ's prompt is overridden.
+[[ -f "$HOME/.config/starship.toml" ]] && eval "$(starship init zsh)"
+
+# ============================================================================
+# User configuration (ported from ~/.config/fish/config.fish via chezmoi)
+# ============================================================================
+
+# --- Paths: user-local tooling ----------------------------------------------
+[[ -d "$HOME/.local/bin" ]] && export PATH="$HOME/.local/bin:$PATH"
+[[ -d "$HOME/.cargo/bin" ]] && export PATH="$HOME/.cargo/bin:$PATH"
+[[ -d "$HOME/.mavis/bin" ]] && export PATH="$HOME/.mavis/bin:$PATH"
+
+# --- Flutter / Java / Android SDK / TeX --------------------------------------
+[[ -d "$HOME/flutter/bin" ]] && export PATH="$HOME/flutter/bin:$PATH"
+if [[ -d /opt/homebrew/opt/openjdk@17 ]]; then
+  export JAVA_HOME="/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"
+  export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+fi
+if [[ -d "$HOME/Library/Android/sdk" ]]; then
+  export ANDROID_HOME="$HOME/Library/Android/sdk"
+  export ANDROID_SDK_ROOT="$ANDROID_HOME"
+  export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$ANDROID_HOME/cmdline-tools/latest/bin:$PATH"
+fi
+[[ -d /Library/TeX/texbin ]] && export PATH="/Library/TeX/texbin:$PATH"
+
+# --- Locale ------------------------------------------------------------------
+export LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# --- Clash Verge local mixed HTTP proxy (CLI tools only) ---------------------
+if command -v nc >/dev/null 2>&1 && nc -z 127.0.0.1 7897 >/dev/null 2>&1; then
+  export http_proxy=http://127.0.0.1:7897
+  export https_proxy=http://127.0.0.1:7897
+  export HTTP_PROXY="$http_proxy"
+  export HTTPS_PROXY="$https_proxy"
+  export ALL_PROXY=http://127.0.0.1:7897
+  export no_proxy=localhost,127.0.0.1,::1
+  export NO_PROXY="$no_proxy"
+fi
+
+# --- Colima docker socket ----------------------------------------------------
+[[ -S "$HOME/.colima/default/docker.sock" ]] && export DOCKER_HOST="unix://$HOME/.colima/default/docker.sock"
+
+# --- zoxide (smarter cd) -----------------------------------------------------
+command -v zoxide >/dev/null 2>&1 && eval "$(zoxide init zsh)"
+
+# --- atuin (magical shell history) -------------------------------------------
+# https://github.com/atuinsh/atuin — requires the brew daemon (auto-started
+# the first time zsh runs this) for search-as-you-type. Run `atuin login` to
+# enable encrypted cross-machine history sync.
+command -v atuin >/dev/null 2>&1 && eval "$(atuin init zsh)"
+
+# Restore default zsh up-arrow history (atuin's `init zsh` hijacks ^[[A / ^[OA).
+# Ctrl+R (atuin-search) is left as-is so fuzzy search across sessions still works.
+bindkey -M emacs '^[[A' up-line-or-history
+bindkey -M viins '^[[A' up-line-or-history
+bindkey -M vicmd '^[[A' up-line-or-history
+bindkey -M emacs '^[OA' up-line-or-history
+bindkey -M viins '^[OA' up-line-or-history
+bindkey -M vicmd '^[OA' up-line-or-history
+bindkey -M vicmd 'k' up-line-or-history
+
+# --- Codely / Tuanjie Cowork paths (also in ~/.zprofile, mirrored for
+#     non-login interactive shells like VS Code's terminal) -------------------
+for p in "/Applications/Tuanjie Cowork.app/Contents/MacOS" \
+         "$HOME/Library/Application Support/Tuanjie Cowork/bin" \
+         "/Applications/Tuanjie Cowork.app/Contents/MacOS/app/resource/core/bin/darwin-arm64"; do
+  [[ -d "$p" ]] && export PATH="$PATH:$p"
+done
+
+# --- Secrets -----------------------------------------------------------------
+export NOTION_MCP_TOKEN="${NOTION_MCP_TOKEN:-}"
+
+# --- Editor ------------------------------------------------------------------
+export EDITOR=nvim
+
+# --- Aliases -----------------------------------------------------------------
+if command -v lsd >/dev/null 2>&1; then
+  alias ls='lsd'
+  alias l='lsd -l'
+  alias la='lsd -a'
+  alias lla='lsd -la'
+  alias lt='lsd --tree'
+fi
+alias ll='lsd -alF'
+# 2026-10-02: was 'rg --color=auto' (broke grep -E/-o); PATH -> ~/.local/bin/grep (ugrep)
+# alias grep='rg --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ....='cd ../../..'
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit'
+alias gd='git diff'
+
+# --- SSH TERM 自动降级:服务器不认识 xterm-ghostty 时自动改用 xterm-256color ---
+# 只在 ssh/scp/rsync 命令上触发,不影响日常 TERM
+ssh() {
+  local new_term
+  if [[ "$TERM" == xterm-ghostty ]]; then
+    new_term=xterm-256color
+  else
+    new_term="$TERM"
+  fi
+  command env TERM="$new_term" ssh "$@"
+}
+compdef ssh=ssh
+alias scp='command env TERM=xterm-256color scp'
+alias rsync='command env TERM=xterm-256color rsync'
+# --- Tmux shortcuts (ported from fish ~/.config/fish/conf.d/tmux.fish) -------
+# See ~/.config/fish/functions/tx-proj.fish for the original tx-proj.
+
+# tx-proj — attach to (or create) a tmux session named after the current dir.
+# Usage:  cd ~/Projects/myapp  &&  tx-proj
+#   - First run:  creates session "proj-myapp" in $PWD
+#   - Later runs: reattaches the same session
+#   - Safe whether invoked from inside or outside tmux
+tx-proj() {
+  local name="proj-$(basename "$PWD")"
+
+  # Create detached when missing so we don't end up with nested foreground sessions.
+  if ! tmux has-session -t "$name" 2>/dev/null; then
+    tmux new-session -d -s "$name" -c "$PWD"
+  fi
+
+  # Inside tmux: switch the current client. Outside: attach a fresh client.
+  if [[ -n "$TMUX" ]]; then
+    tmux switch-client -t "$name"
+  else
+    tmux attach-session -t "$name"
+  fi
+}
+
+# zj-proj — attach to (or create) a Zellij session named after the current dir.
+zj-proj() {
+  local name="proj-$(basename "$PWD")"
+
+  if [[ -n "$ZELLIJ" ]]; then
+    if zellij list-sessions --short | awk -v name="$name" '$0 == name { found=1 } END { exit !found }'; then
+      zellij action switch-session -c "$PWD" "$name"
+    else
+      zellij attach --create-background "$name" && zellij action switch-session -c "$PWD" "$name"
+    fi
+  else
+    zellij attach --create "$name"
+  fi
+}
+
+# ta — attach to most recent session
+ta() { tmux a "$@"; }
+
+# tn <name> — new named session
+tn() { tmux new -s "$@"; }
+
+# tl — list all sessions
+tl() { tmux ls; }
+
+# tk <name> — kill a session
+tk() { tmux kill-session -t "$@"; }
+
+# --- Local machine overrides (kept last so it can override anything above) ---
+[[ -f "$HOME/.zshrc.local" ]] && source "$HOME/.zshrc.local"
+
+# Added by MiniMax Code
+export PATH="/Users/mcig/.mavis/bin:$PATH"
+# omp removed 2026-09-15: omp and pi were both detected as separate agent kinds
+# by herdr (same @oh-my-pi/pi-coding-agent codebase, different binary names),
+# causing `herdr agent start --kind pi` to fail with "agent_kind_mismatch".
+# Keep `bun bin` in PATH for dsh; pi lives at /opt/homebrew/bin/pi.
+export PATH="/Users/mcig/.bun/bin:$PATH"
+
+# p10k disabled 2026-04-16 (now using starship). To re-enable:
+#   1. Set ZSH_THEME="powerlevel10k/powerlevel10k" above.
+#   2. Uncomment the block below.
+#   3. Run `p10k configure` to regenerate ~/.p10k.zsh.
+# [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+alias l='eza -la'
+
+# >>> wandb api key from netrc >>>
+# wandb 0.28 CLI does not read ~/.netrc; expose the key as $WANDB_API_KEY
+# so `wandb status`, `wandb login --check`, and runs commands all see it.
+export WANDB_API_KEY="${WANDB_API_KEY:-$(awk '/machine api.wandb.ai/{found=1} found && /password/{print $2; exit}' "$HOME/.netrc" 2>/dev/null)}"
+# <<< wandb api key from netrc <<<
+
+export NODE_OPTIONS=--dns-result-order=ipv4first
+
+
+# >>> HuggingFace Mirror (hf-mirror.com) >>>
+# MUST be set before any Python import of huggingface_hub/transformers
+export HF_ENDPOINT=https://hf-mirror.com
+export HF_HUB_CACHE="$HOME/.cache/huggingface/hub"
+export HF_XET_HIGH_PERFORMANCE=1  # v1.0+ 加速后端，替代已废弃的 hf_transfer
+                                  # 若某次下载 hang 死无报错，单次用 HF_HUB_DISABLE_XET=1 回落
+export HF_HUB_DOWNLOAD_TIMEOUT=30 # 慢网防 10s 默认 socket 读超时
+export HF_HUB_ETAG_TIMEOUT=30     # snapshot 元数据 HEAD 同样防超时
+# If you have a HF token (for gated models), uncomment:
+# export HF_TOKEN=hf_xxxxxxxxxxxxxxxxx
+# ← 替换为实际 token，从 https://huggingface.co/settings/tokens 获取
+# <<< HuggingFace Mirror <<<
+
+# === air-1 / air-2 (mochiquan@117.74.67.2:40022/40023, 通过 mihomo SOCKS5 直连) ===
+alias air-1='sshpass -f ~/.ssh/secrets/airpass ssh air-1'
+alias air-2='sshpass -f ~/.ssh/secrets/airpass ssh air-2'
+
+
+# Added by Antigravity CLI installer
+export PATH="/Users/mcig/.local/bin:$PATH"
+
+# MiniMax Code CLI
+export PATH="/Users/mcig/.minimax-code/bin:$PATH"
+
+# >>> twitter-cli via Agent Reach >>>
+# twitter-cli cannot read Agent Reach's config directly and browser cookie
+# extraction may fail. Load the saved credentials only for this invocation.
+twitter() {
+  /Users/mcig/.local/pipx/venvs/agent-reach/bin/python - "$@" <<'PY'
+import os
+import subprocess
+import sys
+
+from agent_reach.channels.twitter import twitter_cli_child_env
+from agent_reach.config import Config
+
+env = os.environ.copy()
+env.update(twitter_cli_child_env(Config(read_only=True)))
+if not env.get("TWITTER_AUTH_TOKEN") or not env.get("TWITTER_CT0"):
+    raise SystemExit(
+        "Missing Twitter credentials. Run: agent-reach configure twitter-cookies"
+    )
+raise SystemExit(
+    subprocess.run(
+        ["/Users/mcig/.local/bin/twitter", *sys.argv[1:]],
+        env=env,
+    ).returncode
+)
+PY
+}
+# <<< twitter-cli via Agent Reach <<<
