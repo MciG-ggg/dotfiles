@@ -1,0 +1,14 @@
+model = "codex/gpt-6-luna"
+model_provider = "magpie"
+model_reasoning_effort = "high"
+model_context_window = 1000000
+model_auto_compact_token_limit = 700000
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[model_providers.magpie]
+name = "magpie"
+base_url = "http://100.79.153.48:3425/v1"
+wire_api = "responses"
+env_key = "MAGPIE_API_KEY"
+requires_openai_auth = false
